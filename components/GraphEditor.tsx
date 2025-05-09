@@ -58,8 +58,29 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
 export default function GraphEditor({ data, onChange }: Props) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+
+  // Check theme
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDarkTheme(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkTheme();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const { nodes: rawNodes, edges: rawEdges } = flattenTreeForFlow(data);
@@ -100,7 +121,7 @@ export default function GraphEditor({ data, onChange }: Props) {
         nodesConnectable={false}
         fitView
       >
-        <Background key="bg" gap={16} />
+        <Background color={isDarkTheme ? '#555' : '#aaa'} gap={16} />
         <Controls key="ctrl" />
       </ReactFlow>
     </div>

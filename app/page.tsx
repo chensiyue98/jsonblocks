@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Editor } from '@monaco-editor/react';
 import GraphEditor from '../components/GraphEditor';
 
@@ -60,6 +60,30 @@ export default function HomePage() {
   const [rawJson, setRawJson] = useState(initial);
   const [treeData, setTreeData] = useState(() => jsonToTree(JSON.parse(initial)));
   const [error, setError] = useState('');
+  const [editorTheme, setEditorTheme] = useState('light');
+
+  // Monitor theme changes
+  useEffect(() => {
+    // Initial theme setup
+    const isDark = document.documentElement.classList.contains('dark');
+    setEditorTheme(isDark ? 'vs-dark' : 'light');
+
+    // Create observer to watch for class changes on html element
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          const isDark = document.documentElement.classList.contains('dark');
+          setEditorTheme(isDark ? 'vs-dark' : 'light');
+        }
+      });
+    });
+
+    // Start observing the document with the configured parameters
+    observer.observe(document.documentElement, { attributes: true });
+
+    // Cleanup observer on component unmount
+    return () => observer.disconnect();
+  }, []);
 
   const handleJsonChange = (value?: string) => {
     const txt = value || '';
@@ -81,12 +105,13 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div style={{ display: 'flex', height: 'calc(100vh - 3rem)' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 8 }}>
         <Editor
           height="100%"
           defaultLanguage="json"
           value={rawJson}
+          theme={editorTheme}
           onChange={handleJsonChange}
           options={{
             minimap: { enabled: false },
@@ -96,7 +121,7 @@ export default function HomePage() {
         />
         {error && <div style={{ color: 'red', marginTop: 4 }}>JSON 解析错误: {error}</div>}
       </div>
-      <div style={{ flex: 2, borderLeft: '1px solid #ddd' }}>
+      <div style={{ flex: 2, borderLeft: '1px solid var(--menubar-border)' }}>
         <GraphEditor data={treeData} onChange={handleTreeUpdate} />
       </div>
     </div>
