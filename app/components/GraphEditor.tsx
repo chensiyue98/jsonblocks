@@ -24,7 +24,7 @@ type Props = { data: any; onChange: (newTree: any) => void };
 const nodeTypes = { custom: CustomNode };
 
 // 布局参数
-const NODE_WIDTH = 220;
+const NODE_WIDTH = 300;
 const NODE_HEIGHT = 80;
 
 function getLayoutedElements(nodes: Node[], edges: Edge[]) {
