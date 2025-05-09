@@ -1,7 +1,8 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
 import { Editor } from '@monaco-editor/react';
-import GraphEditor from '../components/GraphEditor';
+import GraphEditor from './components/GraphEditor';
+import exampleJson from './resources/example.json';
 
 function jsonToTree(value: any, name: string = 'root', path: string = '0'): any {
   const node: any = { id: path, label: name, children: [] };
@@ -56,7 +57,8 @@ function treeToJson(node: any): any {
 }
 
 export default function HomePage() {
-  const initial = JSON.stringify({ orderId: 'A123', customer: { name: 'Jane' }, products: [1, 2] }, null, 2);
+  // use /resources/example.json
+  const initial = JSON.stringify(exampleJson, null, 2);
   const [rawJson, setRawJson] = useState(initial);
   const [treeData, setTreeData] = useState(() => jsonToTree(JSON.parse(initial)));
   const [error, setError] = useState('');
