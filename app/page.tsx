@@ -22,7 +22,7 @@ function jsonToTree(value: any, name: string = 'root', path: string = '0'): any 
 
 function treeToJson(node: any): any {
   const { label, children } = node;
-  
+
   // 叶子节点处理
   if (!children || children.length === 0) {
     const idx = label.indexOf(': ');
@@ -34,7 +34,7 @@ function treeToJson(node: any): any {
     if (!isNaN(num) && raw.trim() !== '') return num;
     return raw;
   }
-  
+
   // 对象节点处理
   if (label.includes('{Object}')) {
     const obj: any = {};
@@ -45,7 +45,7 @@ function treeToJson(node: any): any {
     });
     return obj;
   }
-  
+
   // 数组节点处理
   if (label.includes('[Array]')) {
     const arr: any[] = [];
@@ -57,7 +57,7 @@ function treeToJson(node: any): any {
       } else {
         idx = parseInt(c.label.split(/[{\[ ]/)[0], 10);
       }
-      
+
       if (!isNaN(idx)) {
         arr[idx] = treeToJson(c);
       } else {
@@ -67,7 +67,7 @@ function treeToJson(node: any): any {
     });
     return arr;
   }
-  
+
   // 兜底处理，处理没有明确标记的节点
   const anyObj: any = {};
   children.forEach((c: any) => {

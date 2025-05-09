@@ -25,9 +25,9 @@ const nodeTypes = { custom: CustomNode };
 
 // Layout constants
 const NODE_WIDTH = 300;
-const HEADER_HEIGHT = 28;  
-const V_PADDING = 16;  
-const ROW_HEIGHT = 24;    
+const HEADER_HEIGHT = 28;
+const V_PADDING = 16;
+const ROW_HEIGHT = 24;
 
 function getLayoutedElements(nodes: Node[], edges: Edge[]) {
   const dagreGraph = new dagre.graphlib.Graph();
@@ -58,7 +58,7 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
     };
   });
 
-  return { nodes: layoutedNodes, edges };  
+  return { nodes: layoutedNodes, edges };
 }
 
 export default function GraphEditor({ data, onChange }: Props) {
@@ -73,7 +73,7 @@ export default function GraphEditor({ data, onChange }: Props) {
     const checkTheme = () => {
       setIsDarkTheme(document.documentElement.classList.contains('dark'));
     };
-    
+
     checkTheme();
 
     const observer = new MutationObserver((mutations) => {
