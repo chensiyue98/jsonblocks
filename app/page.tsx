@@ -1,5 +1,6 @@
 'use client';
 import { useState, useCallback } from 'react';
+import { Editor } from '@monaco-editor/react';
 import GraphEditor from '../components/GraphEditor';
 
 function jsonToTree(value: any, name: string = 'root', path: string = '0'): any {
@@ -46,7 +47,6 @@ function treeToJson(node: any): any {
     });
     return arr;
   }
-  // fallback
   const anyObj: any = {};
   children.forEach((c: any) => {
     const key = c.label.split(/[: {\[]/)[0];
@@ -61,8 +61,8 @@ export default function HomePage() {
   const [treeData, setTreeData] = useState(() => jsonToTree(JSON.parse(initial)));
   const [error, setError] = useState('');
 
-  const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const txt = e.target.value;
+  const handleJsonChange = (value?: string) => {
+    const txt = value || '';
     setRawJson(txt);
     try {
       const parsed = JSON.parse(txt);
@@ -82,11 +82,17 @@ export default function HomePage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
-      <div style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
-        <textarea
-          style={{ flex: 1, fontFamily: 'monospace', borderColor: error ? 'red' : undefined }}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 8 }}>
+        <Editor
+          height="100%"
+          defaultLanguage="json"
           value={rawJson}
           onChange={handleJsonChange}
+          options={{
+            minimap: { enabled: false },
+            fontFamily: 'monospace',
+            automaticLayout: true,
+          }}
         />
         {error && <div style={{ color: 'red', marginTop: 4 }}>JSON 解析错误: {error}</div>}
       </div>
