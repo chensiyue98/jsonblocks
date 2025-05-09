@@ -118,6 +118,7 @@ export default function GraphEditor({ data, onChange }: Props) {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        defaultEdgeOptions={{ type: 'step' }}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

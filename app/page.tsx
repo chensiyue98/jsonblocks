@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Editor } from '@monaco-editor/react';
 import GraphEditor from './components/GraphEditor';
 import exampleJson from './resources/example.json';
@@ -84,6 +84,8 @@ export default function HomePage() {
   const [treeData, setTreeData] = useState(() => jsonToTree(JSON.parse(initial)));
   const [error, setError] = useState('');
   const [editorTheme, setEditorTheme] = useState('light');
+  const [editorWidth, setEditorWidth] = useState(30); // percentage of total width
+  const isDraggingRef = useRef(false);
 
   // Monitor theme changes
   useEffect(() => {
@@ -127,9 +129,40 @@ export default function HomePage() {
     setError('');
   }, []);
 
+  // Handle resize drag events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isDraggingRef.current) {
+      const containerWidth = window.innerWidth;
+      const newWidth = (e.clientX / containerWidth) * 100;
+      // Limit the editor width between 10% and 90%
+      setEditorWidth(Math.min(Math.max(newWidth, 10), 90));
+    }
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    isDraggingRef.current = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  }, [handleMouseMove]);
+
+  // Clean up event listeners
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 3rem)' }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 8 }}>
+      <div style={{ width: `${editorWidth}%`, display: 'flex', flexDirection: 'column', padding: 8 }}>
         <Editor
           height="100%"
           defaultLanguage="json"
@@ -144,7 +177,16 @@ export default function HomePage() {
         />
         {error && <div style={{ color: 'red', marginTop: 4 }}>JSON 解析错误: {error}</div>}
       </div>
-      <div style={{ flex: 2, borderLeft: '1px solid var(--menubar-border)' }}>
+      <div
+        style={{
+          width: '5px',
+          cursor: 'col-resize',
+          background: 'var(--menubar-border)',
+          userSelect: 'none',
+        }}
+        onMouseDown={handleMouseDown}
+      />
+      <div style={{ width: `calc(100% - ${editorWidth}% - 5px)`, borderLeft: '1px solid var(--menubar-border)' }}>
         <GraphEditor data={treeData} onChange={handleTreeUpdate} />
       </div>
     </div>
