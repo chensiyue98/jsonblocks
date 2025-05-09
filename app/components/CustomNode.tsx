@@ -16,6 +16,16 @@ type CustomNodeData = {
   isRoot?: boolean;
 };
 
+// 根据键名生成一致的 HSL 颜色
+function getColorForKey(key: string): string {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = key.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue},60%,40%)`;
+}
+
 export default function CustomNode({
   data,
 }: {
@@ -23,13 +33,33 @@ export default function CustomNode({
 }) {
   const { label, properties, isRoot } = data;
 
-  // 根节点紫色，数组节点深蓝，其它绿色
-  let headerColor = '#388e3c';
-  if (label.includes('[Array]')) headerColor = '#283593';
-  if (isRoot) headerColor = '#6a1b9a';
-
-  // 清理标签后缀，只保留纯名称
+  // 清理标签后缀，只保留纯名称，用于颜色和展示
   const displayLabel = label.replace(/ \[Array\]| \{Object\}/g, '');
+  const displayLabelTemp = displayLabel.split(/[: {\[]/)[0];
+
+  // 计算 headerColor：
+  // - 根节点：固定紫色
+  // - 数组节点：根据数组名着色
+  // - 数组子节点：根据数组名着色
+  // - 其他对象节点：固定绿色
+  let headerColor: string;
+  if (isRoot) {
+    headerColor = '#6a1b9a';
+  } else {
+    // 数组节点自身标记带有 "[Array]" 原始标签
+    if (label.includes('[Array]')) {
+      headerColor = getColorForKey(displayLabelTemp);
+    }
+    // 数组子节点，匹配 "name (index)"
+    else if (/^.+ \(\d+\)$/.test(displayLabelTemp)) {
+      // 提取数组名
+      const match = displayLabelTemp.match(/^(.+) \(\d+\)$/);
+      const arrayName = match ? match[1] : displayLabelTemp;
+      headerColor = getColorForKey(arrayName);
+    } else {
+      headerColor = '#388e3c';
+    }
+  }
 
   return (
     <div
@@ -42,7 +72,7 @@ export default function CustomNode({
         position: 'relative',
       }}
     >
-      {/* 表头区域 */}
+      {/* 表头区域，左侧 target handle */}
       <div
         style={{
           background: headerColor,
@@ -51,14 +81,14 @@ export default function CustomNode({
           position: 'relative',
         }}
       >
-        {/* Target Handle 在表头左侧 */}
         <Handle
           type="target"
+          id="target"
           position={Position.Left}
           style={{
             background: headerColor,
-            top: '14px',  // 表头高度约28px，居中
-            left: -8      // 拉到节点左侧外
+            top: '14px',
+            left: -8,
           }}
         />
         <span style={{ color: '#fff', fontWeight: 'bold' }}>
@@ -96,7 +126,6 @@ export default function CustomNode({
               {JSON.stringify(p.value)}
             </span>
 
-            {/* Source Handle 在行尾右侧 */}
             {p.handleId && (
               <Handle
                 type="source"

@@ -66,6 +66,7 @@ function dfs(n: any, depth = 0, pid: string | null = null) {
         source: n.id,
         sourceHandle: handleId,
         target: child.id,
+        targetHandle: 'target',
       });
       dfs(child, depth + 1, n.id);
     }

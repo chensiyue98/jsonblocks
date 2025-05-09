@@ -23,17 +23,23 @@ type Props = { data: any; onChange: (newTree: any) => void };
 
 const nodeTypes = { custom: CustomNode };
 
-// 布局参数
+// Layout constants
 const NODE_WIDTH = 300;
-const NODE_HEIGHT = 80;
+const HEADER_HEIGHT = 28;  
+const V_PADDING = 16;  
+const ROW_HEIGHT = 24;    
 
 function getLayoutedElements(nodes: Node[], edges: Edge[]) {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'LR', align: 'UL', nodesep: 50, ranksep: 100 });
+  dagreGraph.setGraph({ rankdir: 'LR', align: 'UL', nodesep: 30, ranksep: 60 });
 
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  nodes.forEach((n) => {
+    const propCount = Array.isArray(n.data.properties)
+      ? n.data.properties.length
+      : 0;
+    const height = HEADER_HEIGHT + propCount * ROW_HEIGHT + V_PADDING;
+    dagreGraph.setNode(n.id, { width: NODE_WIDTH, height });
   });
   edges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
@@ -47,7 +53,7 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
       ...node,
       position: {
         x: nodeWithPosition.x - NODE_WIDTH / 2,
-        y: nodeWithPosition.y - NODE_HEIGHT / 2,
+        y: nodeWithPosition.y - nodeWithPosition.height / 2,
       },
     };
   });
