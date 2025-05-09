@@ -36,7 +36,7 @@ export default function CustomNode({ data }: { data: { label: string; properties
       </div>
 
       {/* 连出 Handle */}
-      <Handle type="source" position={Position.Bottom} style={{ background: headerColor }} />
+      <Handle type="source" position={Position.Right} style={{ background: headerColor }} />
       <Handle type="source" position={Position.Right} style={{ background: headerColor }} />
     </div>
   );

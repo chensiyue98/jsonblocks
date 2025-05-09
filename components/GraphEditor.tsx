@@ -13,15 +13,47 @@ import ReactFlow, {
   OnNodesChange,
   OnEdgesChange,
 } from 'reactflow';
+import dagre from 'dagre';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
 
-// 仅分支对象/数组节点，叶子键值内联
-import { flattenTreeForFlow } from '../utils/treeUtils';
+import { flattenTreeForFlow, reparentNode } from '../utils/treeUtils';
 
 type Props = { data: any; onChange: (newTree: any) => void };
 
 const nodeTypes = { custom: CustomNode };
+
+// 布局参数
+const NODE_WIDTH = 220;
+const NODE_HEIGHT = 80;
+
+function getLayoutedElements(nodes: Node[], edges: Edge[]) {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  dagreGraph.setGraph({ rankdir: 'LR', align: 'UL', nodesep: 50, ranksep: 100 });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  });
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - NODE_WIDTH / 2,
+        y: nodeWithPosition.y - NODE_HEIGHT / 2,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };  
+}
 
 export default function GraphEditor({ data, onChange }: Props) {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -30,9 +62,10 @@ export default function GraphEditor({ data, onChange }: Props) {
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
 
   useEffect(() => {
-    const { nodes: n, edges: e } = flattenTreeForFlow(data);
-    setNodes(n);
-    setEdges(e);
+    const { nodes: rawNodes, edges: rawEdges } = flattenTreeForFlow(data);
+    const { nodes: ln, edges: le } = getLayoutedElements(rawNodes, rawEdges);
+    setNodes(ln);
+    setEdges(le);
   }, [data]);
 
   const onConnect = (c: Connection) => setEdges((eds) => addEdge(c, eds));
@@ -47,7 +80,7 @@ export default function GraphEditor({ data, onChange }: Props) {
       if (tgt.id === node.id) continue;
       const tpos = project(tgt.position);
       if (Math.hypot(pos.x - tpos.x, pos.y - tpos.y) < 50) {
-        onChange(require('../utils/treeUtils').reparentNode(data, node.id, tgt.id));
+        onChange(reparentNode(data, node.id, tgt.id));
         break;
       }
     }
@@ -64,6 +97,7 @@ export default function GraphEditor({ data, onChange }: Props) {
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
         onNodeDragStop={onNodeDragStop}
+        fitView
       >
         <Background key="bg" gap={16} />
         <Controls key="ctrl" />
