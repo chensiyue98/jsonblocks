@@ -22,6 +22,8 @@ function jsonToTree(value: any, name: string = 'root', path: string = '0'): any 
 
 function treeToJson(node: any): any {
   const { label, children } = node;
+  
+  // 叶子节点处理
   if (!children || children.length === 0) {
     const idx = label.indexOf(': ');
     const raw = idx >= 0 ? label.slice(idx + 2) : '';
@@ -32,22 +34,41 @@ function treeToJson(node: any): any {
     if (!isNaN(num) && raw.trim() !== '') return num;
     return raw;
   }
-  if (label.endsWith('{Object}')) {
+  
+  // 对象节点处理
+  if (label.includes('{Object}')) {
     const obj: any = {};
     children.forEach((c: any) => {
+      // 提取不含修饰符的键名
       const key = c.label.split(/[: {\[]/)[0];
       obj[key] = treeToJson(c);
     });
     return obj;
   }
-  if (label.endsWith('[Array]')) {
+  
+  // 数组节点处理
+  if (label.includes('[Array]')) {
     const arr: any[] = [];
     children.forEach((c: any) => {
-      const idx = parseInt(c.label.split(/[: {\[]/)[0], 10);
-      arr[idx] = treeToJson(c);
+      // 尝试提取索引（考虑到标签可能是 "0: value" 或 "0 {Object}" 格式）
+      let idx;
+      if (c.label.includes(': ')) {
+        idx = parseInt(c.label.split(':', 1)[0], 10);
+      } else {
+        idx = parseInt(c.label.split(/[{\[ ]/)[0], 10);
+      }
+      
+      if (!isNaN(idx)) {
+        arr[idx] = treeToJson(c);
+      } else {
+        // 无法解析索引时，添加到数组末尾
+        arr.push(treeToJson(c));
+      }
     });
     return arr;
   }
+  
+  // 兜底处理，处理没有明确标记的节点
   const anyObj: any = {};
   children.forEach((c: any) => {
     const key = c.label.split(/[: {\[]/)[0];
