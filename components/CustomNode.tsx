@@ -16,7 +16,7 @@ export default function CustomNode({ data }: { data: { label: string; properties
     <div style={{ width: 220, fontFamily: 'monospace', borderRadius: 4, overflow: 'hidden', background: '#212121', boxShadow: '0 1px 5px rgba(0,0,0,0.5)' }}>
       {/* 连入 Handle */}
       <Handle type="target" position={Position.Left} style={{ background: headerColor }} />
-      <Handle type="target" position={Position.Top} style={{ background: headerColor }} />
+      <Handle type="target" position={Position.Right} style={{ background: headerColor }} />
 
       {/* Header */}
       <div style={{ background: headerColor, color: '#fff', padding: '4px 8px', fontSize: 12, fontWeight: 'bold' }}>

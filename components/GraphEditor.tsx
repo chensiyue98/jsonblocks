@@ -97,6 +97,7 @@ export default function GraphEditor({ data, onChange }: Props) {
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
         onNodeDragStop={onNodeDragStop}
+        nodesConnectable={false}
         fitView
       >
         <Background key="bg" gap={16} />
