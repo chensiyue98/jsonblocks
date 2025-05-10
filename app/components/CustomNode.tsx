@@ -1,8 +1,8 @@
 // components/CustomNode.tsx
 'use client';
 
-import React from 'react';
-import { Handle, Position } from 'reactflow';
+import React, { useCallback } from 'react';
+import { Handle, Position, NodeProps } from 'reactflow';
 
 type PropWithHandle = {
   key: string;
@@ -14,6 +14,7 @@ type CustomNodeData = {
   label: string;
   properties: PropWithHandle[];
   isRoot?: boolean;
+  onRowTransfer?: (sourceNodeId: string, targetNodeId: string, propertyIndex: number) => void;
 };
 
 // 根据键名生成一致的 HSL 颜色
@@ -26,11 +27,43 @@ function getColorForKey(key: string): string {
   return `hsl(${hue},60%,40%)`;
 }
 
-export default function CustomNode({
-  data,
-}: {
-  data: CustomNodeData;
-}) {
+const CustomNode = ({ data, id, isConnectable, ...props }: NodeProps<CustomNodeData>) => {
+  const onDragStartRow = useCallback((event: React.DragEvent<HTMLDivElement>, propertyIndex: number) => {
+    // Prevent parent node drag when dragging a row
+    event.stopPropagation();
+    
+    // Set the drag data with the source node ID and property index
+    event.dataTransfer.setData('application/reactflow', JSON.stringify({
+      nodeId: id,
+      propertyIndex,
+      type: 'property-row'
+    }));
+    
+    event.dataTransfer.effectAllowed = 'move';
+  }, [id]);
+
+  const onDragOverNode = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDropRow = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    
+    try {
+      const payload = JSON.parse(event.dataTransfer.getData('application/reactflow'));
+      
+      if (payload.type === 'property-row' && payload.nodeId !== id) {
+        // Call the onRowTransfer handler provided in data
+        if (data.onRowTransfer) {
+          data.onRowTransfer(payload.nodeId, id, payload.propertyIndex);
+        }
+      }
+    } catch (error) {
+      console.error('Error processing drop event:', error);
+    }
+  }, [id, data]);
+
   const { label, properties, isRoot } = data;
 
   // 清理标签后缀，只保留纯名称，用于颜色和展示
@@ -63,6 +96,9 @@ export default function CustomNode({
 
   return (
     <div
+      className="custom-node"
+      onDragOver={onDragOverNode}
+      onDrop={onDropRow}
       style={{
         width: 300,
         fontFamily: 'monospace',
@@ -79,6 +115,7 @@ export default function CustomNode({
           padding: '6px 8px',
           borderRadius: '4px 4px 0 0',
           position: 'relative',
+          cursor: 'move', // 指示表头可拖动
         }}
       >
         <Handle
@@ -98,17 +135,25 @@ export default function CustomNode({
 
       {/* 属性列表，行间用细线分隔 */}
       <div style={{ padding: '8px' }}>
-        {properties.map((p, i) => (
+        {properties.map((p: PropWithHandle, i: number) => (
           <div
             key={p.key}
+            draggable
+            onDragStart={(e) => onDragStartRow(e, i)}
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              padding: '4px 0',
+              // padding: '4px 0',
               borderBottom: i < properties.length - 1 ? '1px solid #444' : 'none',
               position: 'relative',
+              cursor: 'grab', // 指示行可拖拽
+              transition: 'background-color 0.2s',
+              padding: '4px 6px', // 增加内边距使行更容易点击
+              borderRadius: 2,
             }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2d2d2d')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
           >
             <span style={{ color: '#90caf9' }}>{p.key}</span>
             <span
@@ -145,4 +190,6 @@ export default function CustomNode({
       </div>
     </div>
   );
-}
+};
+
+export default CustomNode;

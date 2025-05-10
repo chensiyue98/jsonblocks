@@ -61,6 +61,47 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
   return { nodes: layoutedNodes, edges };
 }
 
+// Add a new utility function to transfer properties between nodes
+const transferNodeProperty = (tree: any, sourceNodeId: string, targetNodeId: string, propertyIndex: number) => {
+  // Create a deep copy of the tree to avoid mutations
+  const newTree = JSON.parse(JSON.stringify(tree));
+  
+  // Find the source and target nodes
+  const findNode = (obj: any, id: string): any => {
+    if (obj.id === id) return obj;
+    if (obj.children) {
+      for (const child of obj.children) {
+        const found = findNode(child, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+  
+  const sourceNode = findNode(newTree, sourceNodeId);
+  const targetNode = findNode(newTree, targetNodeId);
+  
+  if (!sourceNode || !targetNode || !Array.isArray(sourceNode.properties)) {
+    return tree;
+  }
+  
+  // Move the property from source to target
+  if (propertyIndex >= 0 && propertyIndex < sourceNode.properties.length) {
+    const property = sourceNode.properties[propertyIndex];
+    
+    // Add to target node
+    if (!Array.isArray(targetNode.properties)) {
+      targetNode.properties = [];
+    }
+    targetNode.properties.push(property);
+    
+    // Remove from source node
+    sourceNode.properties.splice(propertyIndex, 1);
+  }
+  
+  return newTree;
+};
+
 export default function GraphEditor({ data, onChange }: Props) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -112,6 +153,28 @@ export default function GraphEditor({ data, onChange }: Props) {
       }
     }
   };
+
+  const handleRowTransfer = (sourceNodeId: string, targetNodeId: string, propertyIndex: number) => {
+    const updatedTree = transferNodeProperty(data, sourceNodeId, targetNodeId, propertyIndex);
+    onChange(updatedTree);
+  };
+
+  useEffect(() => {
+    const { nodes: rawNodes, edges: rawEdges } = flattenTreeForFlow(data);
+    
+    // Add onRowTransfer handler to each node's data
+    const nodesWithHandlers = rawNodes.map(node => ({
+      ...node,
+      data: {
+        ...node.data,
+        onRowTransfer: handleRowTransfer
+      }
+    }));
+    
+    const { nodes: ln, edges: le } = getLayoutedElements(nodesWithHandlers, rawEdges);
+    setNodes(ln);
+    setEdges(le);
+  }, [data, onChange]);
 
   return (
     <div ref={wrapperRef} style={{ width: '100%', height: '100%' }}>
