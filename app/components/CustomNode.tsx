@@ -140,6 +140,8 @@ const CustomNode = ({ data, id, isConnectable, ...props }: NodeProps<CustomNodeD
             key={p.key}
             draggable
             onDragStart={(e) => onDragStartRow(e, i)}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
             style={{
               display: 'flex',
               justifyContent: 'space-between',
