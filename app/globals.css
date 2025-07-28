@@ -117,3 +117,9 @@ body {
 .custom-node-property:last-child {
   margin-bottom: 0;
 }
+
+/* Property row dragging styles */
+.property-row-draggable {
+  /* Ensure property rows can initiate their own drag events */
+  pointer-events: auto;
+}

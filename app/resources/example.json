@@ -1,60 +1,36 @@
 {
-  "manufacturer": "Nintendo",
-  "headquarters": "Kyoto, Japan",
-  "consoles": [
+  "orderId": "A12345",
+  "customer": {
+    "name": "Jane Doe",
+    "email": "jane.doe@example.com",
+    "address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001"
+    },
+    "isMember": true
+  },
+  "products": [
     {
-      "name": "Super Nintendo Entertainment System",
-      "abbreviation": "SNES",
-      "generation": 4,
-      "release_dates": {
-        "japan": "1990-11-21",
-        "north_america": "1991-08-23",
-        "europe": "1992-04-11"
-      },
-      "technical_specs": {
-        "cpu": "Ricoh 5A22 (based on 65C816)",
-        "ppu": "S-PPU",
-        "system_memory_kb": 128,
-        "video_memory_kb": 64
-      },
-      "media_formats": [
-        "ROM cartridge",
-        "Super Famicom enhancement chips"
-      ],
-      "popular_games": [
-        "Super Mario World",
-        "Chrono Trigger",
-        "Donkey Kong Country"
-      ],
-      "discontinued": true
+      "productId": "P001",
+      "name": "Wireless Mouse",
+      "quantity": 2,
+      "price": 25.5,
+      "image": "https://example.com/wireless-mouse.jpg",
+      "color": "#3498db"
     },
     {
-      "name": "Nintendo 64",
-      "abbreviation": "N64",
-      "generation": 5,
-      "release_dates": {
-        "japan": "1996-06-23",
-        "north_america": "1996-09-29",
-        "europe": "1997-03-01"
-      },
-      "technical_specs": {
-        "cpu": "NEC VR4300 (64-bit MIPS R4300i)",
-        "gpu": "SGI RCP",
-        "system_memory_mb": 4,
-        "expansion_slot": {
-          "type": "Memory Expansion Pak",
-          "capacity_mb": 4
-        }
-      },
-      "media_formats": [
-        "Game Pak cartridge"
-      ],
-      "popular_games": [
-        "Super Mario 64",
-        "The Legend of Zelda: Ocarina of Time",
-        "GoldenEye 007"
-      ],
-      "discontinued": true
+      "productId": "P002",
+      "name": "Keyboard",
+      "quantity": 1,
+      "price": 45,
+      "image": "https://example.com/keyboard.jpg",
+      "color": "#2ecc71"
     }
-  ]
+  ],
+  "orderDate": "2025-01-02T10:15:30Z",
+  "status": "Processing",
+  "isPaid": false,
+  "totalAmount": 96
 }

@@ -142,11 +142,10 @@ export default function GraphEditor({ data, onChange }: Props) {
 
   const onNodeDragStop = (_: any, node: Node) => {
     if (!rfInstance) return;
-    const { project } = rfInstance;
-    const pos = project(node.position);
+    const pos = rfInstance.screenToFlowPosition(node.position);
     for (const tgt of nodes) {
       if (tgt.id === node.id) continue;
-      const tpos = project(tgt.position);
+      const tpos = rfInstance.screenToFlowPosition(tgt.position);
       if (Math.hypot(pos.x - tpos.x, pos.y - tpos.y) < 50) {
         onChange(reparentNode(data, node.id, tgt.id));
         break;
